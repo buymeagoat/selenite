@@ -137,3 +137,17 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Python virtualenv
+backend/.venv/
+
+# SQLite database
+*.db
+
+# AI planning docs — ignored by all tools for token optimization
+.planning/
+
+# Per-agent ignore files (local tooling config, not for version control)
+.claudeignore
+.codexignore
+.geminiignore
