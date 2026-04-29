@@ -3,8 +3,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from fastapi import Depends, HTTPException, Cookie, status
 from sqlalchemy.ext.asyncio import AsyncSession
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from app.database import get_db
 from app.config_store import get_config
 
@@ -13,15 +13,13 @@ ALGORITHM = "HS256"
 COOKIE_NAME = "selenite_session"
 TOKEN_EXPIRE_HOURS = 24
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
 def create_token() -> str:
