@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 
 from app.database import Base, get_db
 from app.main import app
+from app.processors.stubs import register_all_stubs
+from app.processors.registry import registry
 
 TEST_DB = "sqlite+aiosqlite:///:memory:"
 
@@ -29,6 +31,11 @@ async def client(db_session: AsyncSession):
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
+    register_all_stubs()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
     app.dependency_overrides.clear()
+    registry._asr.clear()
+    registry._diarizer.clear()
+    registry._ocr.clear()
+    registry._llm.clear()
