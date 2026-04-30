@@ -141,6 +141,14 @@ vite.config.ts.timestamp-*
 # Python virtualenv
 backend/.venv/
 
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Keep directory (reference code, not for version control)
+keep/
+
 # SQLite database
 *.db
 
