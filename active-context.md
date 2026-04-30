@@ -44,9 +44,9 @@ Phase 3 scope (plan not yet written):
 3. Execute via subagent-driven development
 
 ### Workflow
-1. Write files on SNAIL (`d:/Dev/projects/selenite/`)
-2. Push to GitHub
-3. SSH pull on OCTOPUS + run tests
+1. Edit files **directly on OCTOPUS** via VS Code Remote SSH (`octopus-wsl`)
+2. Run/test in VS Code terminal (already on OCTOPUS — no push/pull needed)
+3. Commit + push to GitHub when phase is stable
 
 ### SSH Pattern (all OCTOPUS commands)
 ```bash

@@ -29,6 +29,17 @@ When working in this repo:
 
 Prefer implementation over discussion. If a request is actionable, do the work instead of proposing it.
 
+## Environment
+
+Files are edited **directly on OCTOPUS** via VS Code Remote SSH. No SNAIL intermediary. No git push/pull required during development.
+
+- **Project root on OCTOPUS**: `/home/akapinos/selenite`
+- **SSH host alias**: `octopus-wsl`
+- **venv**: `/home/akapinos/selenite/backend/.venv`
+- **Run server**: `cd ~/selenite/backend && source .venv/bin/activate && python run.py`
+- **Run tests**: `cd ~/selenite/backend && source .venv/bin/activate && pytest -q 2>&1 | tail -20`
+- **Build frontend**: `export NVM_DIR="$HOME/.nvm" && source "$NVM_DIR/nvm.sh" && cd ~/selenite/frontend && npm run build`
+
 ## Repository Boundaries
 
 ### Do Not Read By Default
@@ -74,12 +85,38 @@ If the repo is sparse or partially scaffolded:
 - State missing prerequisites plainly
 - Avoid inventing architecture that is not grounded in the repository
 
+## Token Conservation — ENFORCED
+
+These rules are mandatory and override default behavior.
+
+### File Reading
+- Read only files you will directly edit or that contain a symbol you must import.
+- Never speculatively read directories or "related" files for context.
+- Never re-read a file already read in the same session unless its content changed.
+- For analysis of a file (counting, parsing, searching): script it, do not read into context.
+
+### Terminal Output
+- Never pipe full command output into context.
+- Pytest: capture pass/fail counts + failed test names only (`pytest -q 2>&1 | tail -20`).
+- Build logs: capture error lines only (`| grep -E 'error|Error|ERROR'`).
+- SSH sessions: same rules apply — targeted output only.
+
+### Task Scope
+- Accept batched tasks (e.g., "implement 3.1, 3.2, 3.3") in a single call.
+- Do not verify after each individual file edit. Verify once at end of all edits.
+- Do not re-read planning docs or `active-context.md` mid-task.
+
+### Output
+- Return: what changed, what verified, any blockers. Nothing else.
+- No summaries unless explicitly requested.
+
 ## Verification
 
 After edits:
 - Run relevant tests if they exist
 - If no tests exist, run the smallest available syntax, typecheck, or build validation
 - If nothing can be run, say so explicitly
+- Capture targeted output only (see Token Conservation above)
 
 Do not claim verification you did not perform.
 
