@@ -10,33 +10,38 @@ Session handoff document. Read this at the start of every session. Do not re-rea
 
 ## Current Phase
 
-**Phase 2 — Audio Pipeline. Ready to begin.**
+**Phase 3 — LLM Post-processing. Ready to begin.**
 
-Phase 1 complete. Backend + frontend shell running on OCTOPUS. All 20 tests passing. Next: implement ASR + diarization pipeline.
+Phase 2 complete. Full audio pipeline running on OCTOPUS. 27 backend tests passing. Frontend built (50 modules, 0 TS errors). Upload → ASR → Diarization → Markdown pipeline wired end-to-end.
 
 ---
 
 ## Last Session (2026-04-30)
 
-- Implemented all Phase 1 tasks (1.1–1.10) via subagent-driven development
-- Key deviations from plan: passlib replaced with direct bcrypt (passlib/bcrypt 4.x incompatible), stubs registered explicitly in test fixture (lifespan doesn't run in ASGITransport tests)
-- Fixed: `datetime.utcnow()` → `datetime.now(timezone.utc).replace(tzinfo=None)` (Python 3.12 deprecation)
-- Fixed: `.gitignore` updated to exclude `__pycache__/` and `keep/`
-- Smoke test confirmed: 401 unauth, login/me working, 9 processors all unavailable
+- Implemented all Phase 2 tasks (2.0–2.11) via subagent-driven development
+- Pre-flight: installed torch 2.5.1+cu121, ffmpeg, numpy, pyannote.audio 3.3.2, faster-whisper 1.2.1
+- Key deviations from plan:
+  - `pyannote.audio>=3.0` cannot install via normal pip (requires `lightning` package unavailable); installed with `--no-deps` + manual deps (pytorch-lightning, einops, torchaudio, semver, tensorboardX, speechbrain, omegaconf, pytorch_metric_learning)
+  - `pyannote.audio==1.1.2` installs by default; must use `--no-deps` + upgrade for 3.x
+  - `useAuth.ts` → renamed to `useAuth.tsx` (JSX in .ts file fails tsc)
+- Smoke test confirmed: login works, upload creates artifact + queued jobs, ASR job picked up by queue (model downloading on first run)
 
 ---
 
 ## Next Action
 
-**Execute Phase 2: Audio Pipeline.**
+**Execute Phase 3: LLM Post-processing.**
 
-Phase 2 scope (plan not yet written — Claude Code writes plan first):
-- File upload endpoint (multipart, store to disk)
-- Job queue (asyncio-based, VRAM sequential)
-- ASR processor: faster-whisper-large-v3 (CUDA)
-- Diarization processor: pyannote/speaker-diarization-3.1 (CUDA)
-- Transcript merge + formatting
-- Upload page UI (file picker, processor selection, progress polling)
+Phase 3 scope (plan not yet written):
+- LLM post-processing step after diarization (summarization, action items, etc.)
+- Ollama integration (gemma-4-e4b-it via Windows host at 172.31.192.1:11434)
+- Settings page — set LLM config, HF token, etc.
+- Artifact detail enhancements (show LLM outputs)
+
+### First session actions
+1. Read active-context.md
+2. Write Phase 3 plan to `.planning/plans/`
+3. Execute via subagent-driven development
 
 ### Workflow
 1. Write files on SNAIL (`d:/Dev/projects/selenite/`)
@@ -57,24 +62,30 @@ nvm must be sourced for npm commands:
 export NVM_DIR="$HOME/.nvm" && source "$NVM_DIR/nvm.sh"
 ```
 
+Background processes via SSH need `</dev/null` to avoid hanging:
+```bash
+nohup python run.py >/tmp/selenite.log 2>&1 </dev/null &
+```
+
 ---
 
-## Phase 1 Completion Summary
+## Phase 2 Completion Summary
 
-- [x] 1.1 Python deps — requirements.txt, requirements-dev.txt
-- [x] 1.2 DB models — database.py, models.py, alembic migration
-- [x] 1.3 Auth — bcrypt (direct, not passlib) + JWT HttpOnly cookie, 8 tests
-- [x] 1.4 Processor registry — base.py, registry.py, stubs.py, 4 tests
-- [x] 1.5 API routes — processors, config, artifacts, jobs, 6 route tests
-- [x] 1.6 Backend entry — run.py (uvicorn 0.0.0.0:8000)
-- [x] 1.7 Frontend foundation — Vite 5, Tailwind 3, theme tokens, fonts
-- [x] 1.8 Auth flow — API client, useAuth, Login page, ProtectedRoute
-- [x] 1.9 Shell — NavRail, routing, page stubs (Upload/Queue/Library/Settings)
-- [x] 1.10 Build + smoke — frontend built (46 modules), all 20 tests pass, API verified
+- [x] 2.0 Pre-flight — torch 2.5.1+cu121, ffmpeg, numpy installed on OCTOPUS
+- [x] 2.1 Extend processor protocols — ASRResult, DiarizedResult, transcribe/diarize
+- [x] 2.2 Job queue — asyncio single-worker queue, start/stop in lifespan
+- [x] 2.3 Upload endpoint — POST /api/upload, multipart, artifact + 2 jobs created
+- [x] 2.4 SSE stream — GET /api/jobs/stream, 1s poll, change-tracking
+- [x] 2.5 FasterWhisperProcessor — CUDA, load/unload, executor
+- [x] 2.6 PyannoteDiarizer — pyannote.audio 3.3.2, HF token from config
+- [x] 2.7 Audio pipeline — ASR → enqueue diarize → merge → markdown
+- [x] 2.8 Upload UI — drag-drop, processor selection, submit → /queue
+- [x] 2.9 Queue UI — SSE EventSource, StageNode visualization
+- [x] 2.10 Library + ArtifactDetail — grid, markdown preview, delete
+- [x] 2.11 Build + smoke — 50 modules, 0 TS errors, upload → processing verified
 
-**Test count:** 20 backend tests, all passing
-**Frontend build:** 172KB JS, 1KB CSS, 0 TS errors
-**DB password:** `selenite` (set in config table on OCTOPUS)
+**Test count:** 27 backend tests, all passing
+**Frontend build:** 181KB JS, 1KB CSS, 50 modules, 0 TS errors
 
 ---
 
@@ -87,6 +98,10 @@ export NVM_DIR="$HOME/.nvm" && source "$NVM_DIR/nvm.sh"
 - **Windows home**: `C:\Users\akapi` (not `akapinos`)
 - **venv**: `~/selenite/backend/.venv`
 - **Frontend dist**: `~/selenite/frontend/dist`
+- **torch**: 2.5.1+cu121 (CUDA available)
+- **pyannote.audio**: 3.3.2 (installed --no-deps; `lightning` package unavailable, use pytorch-lightning)
+- **faster-whisper**: 1.2.1
+- **First model run**: whisper large-v3 (~3GB) + pyannote (~1GB) will download on first job
 
 ---
 
@@ -100,10 +115,10 @@ SNAIL (192.168.1.52)
 OCTOPUS (192.168.1.204)
   ├── WSL2 Ubuntu
   │   ├── Selenite backend (FastAPI, port 8000, 0.0.0.0)
-  │   ├── WhisperX + pyannote (CUDA via WSL2 passthrough) — Phase 2
+  │   ├── faster-whisper 1.2.1 + pyannote 3.3.2 (CUDA via WSL2 passthrough)
   │   └── Git repo: ~/selenite
   └── Windows (host)
-      └── Ollama (Windows native) — gemma-4-e4b-it
+      └── Ollama (Windows native) — gemma-4-e4b-it at 172.31.192.1:11434
 
 LAN access:  http://192.168.1.204:8000
 External:    https://selenite.tonykapinos.com (Cloudflare)
@@ -113,10 +128,12 @@ External:    https://selenite.tonykapinos.com (Cloudflare)
 
 ## Open Items
 
+- [ ] HuggingFace token — must be set in config (`processor.pyannote.hf_token`) before pyannote works
+- [ ] First model download — whisper large-v3 (~3GB) + pyannote (~1GB), requires internet on OCTOPUS
+- [ ] Settings page — not yet implemented (can set HF token via API directly for now)
 - [ ] Cloudflare tunnel / port-forward config for external access
-- [ ] Evaluate MiMo-V2.5-ASR: integrated ASR+diarizer vs. standalone — clarify before Phase 2 implementation
-- [ ] SNAIL local LLM — decide before needed (not blocking Phase 2)
-- [ ] jose library uses `datetime.utcnow()` internally (DeprecationWarning in tests) — not blocking, upstream issue
+- [ ] SNAIL local LLM — decide before needed (not blocking Phase 3)
+- [ ] jose library uses `datetime.utcnow()` internally (DeprecationWarning in tests) — upstream issue
 
 ---
 
@@ -128,7 +145,7 @@ External:    https://selenite.tonykapinos.com (Cloudflare)
 | Model/constraint update | Complete | 2026-04-24 |
 | Phase 0: Env setup | Complete | 2026-04-29 |
 | Phase 1: Core scaffold | Complete | 2026-04-30 |
-| Phase 2: Audio pipeline | Not started | — |
+| Phase 2: Audio pipeline | Complete | 2026-04-30 |
 | Phase 3: LLM post-processing | Not started | — |
 | Phase 4: PDF/OCR | Not started | — |
 | Phase 5: Chat export parsing | Not started | — |
