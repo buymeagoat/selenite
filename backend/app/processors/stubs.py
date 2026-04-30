@@ -2,6 +2,7 @@ from pathlib import Path
 from app.processors.registry import registry
 from app.processors.base import ASRResult, DiarizedResult
 from app.processors.faster_whisper import FasterWhisperProcessor
+from app.processors.pyannote_diarizer import PyannoteDiarizer
 
 
 class _WhisperLargeV3Stub:
@@ -25,14 +26,6 @@ class _ParakeetStub:
     display_name = "NVIDIA Parakeet TDT 0.6B v3"
     def available(self) -> bool: return False
     async def transcribe(self, audio_path: Path) -> ASRResult:
-        raise NotImplementedError("Stub processor not available")
-
-
-class _PyannoteStub:
-    key = "pyannote_3_1"
-    display_name = "Pyannote Speaker Diarization 3.1"
-    def available(self) -> bool: return False
-    async def diarize(self, audio_path: Path, asr_result: ASRResult) -> DiarizedResult:
         raise NotImplementedError("Stub processor not available")
 
 
@@ -73,7 +66,7 @@ def register_all_stubs() -> None:
     registry.register_asr(_WhisperLargeV3TurboStub())
     registry.register_asr(FasterWhisperProcessor())
     registry.register_asr(_ParakeetStub())
-    registry.register_diarizer(_PyannoteStub())
+    registry.register_diarizer(PyannoteDiarizer())
     registry.register_diarizer(_MiMoStub())
     registry.register_ocr(_MinerUStub())
     registry.register_ocr(_GlmOcrStub())

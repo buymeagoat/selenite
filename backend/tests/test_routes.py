@@ -28,7 +28,7 @@ async def test_processors_list(client: AsyncClient, db_session):
     assert "pyannote_3_1" in keys
     assert "glm_ocr" in keys
     assert "ollama_gemma" in keys
-    stubs = {p["key"]: p for p in data if p["key"] != "faster_whisper_large_v3"}
+    stubs = {p["key"]: p for p in data if p["key"] not in ("faster_whisper_large_v3", "pyannote_3_1")}
     for p in stubs.values():
         assert p["available"] is False
 
