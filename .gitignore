@@ -159,3 +159,5 @@ keep/
 .claudeignore
 .codexignore
 .geminiignore
+
+backend/uploads/
