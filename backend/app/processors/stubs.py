@@ -1,6 +1,7 @@
 from pathlib import Path
 from app.processors.registry import registry
 from app.processors.base import ASRResult, DiarizedResult
+from app.processors.faster_whisper import FasterWhisperProcessor
 
 
 class _WhisperLargeV3Stub:
@@ -14,14 +15,6 @@ class _WhisperLargeV3Stub:
 class _WhisperLargeV3TurboStub:
     key = "whisper_large_v3_turbo"
     display_name = "Whisper Large v3 Turbo"
-    def available(self) -> bool: return False
-    async def transcribe(self, audio_path: Path) -> ASRResult:
-        raise NotImplementedError("Stub processor not available")
-
-
-class _FasterWhisperLargeV3Stub:
-    key = "faster_whisper_large_v3"
-    display_name = "Faster Whisper Large v3"
     def available(self) -> bool: return False
     async def transcribe(self, audio_path: Path) -> ASRResult:
         raise NotImplementedError("Stub processor not available")
@@ -78,7 +71,7 @@ class _OllamaStub:
 def register_all_stubs() -> None:
     registry.register_asr(_WhisperLargeV3Stub())
     registry.register_asr(_WhisperLargeV3TurboStub())
-    registry.register_asr(_FasterWhisperLargeV3Stub())
+    registry.register_asr(FasterWhisperProcessor())
     registry.register_asr(_ParakeetStub())
     registry.register_diarizer(_PyannoteStub())
     registry.register_diarizer(_MiMoStub())
