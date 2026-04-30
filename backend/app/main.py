@@ -10,13 +10,19 @@ from app.routers import processors as processors_router
 from app.routers import config as config_router
 from app.routers import artifacts as artifacts_router
 from app.routers import jobs as jobs_router
+from app.routers import upload as upload_router
+from app.routers import stream as stream_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     register_all_stubs()
+    from app.queue import start_worker
+    start_worker()
     yield
+    from app.queue import stop_worker
+    await stop_worker()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -26,6 +32,8 @@ app.include_router(processors_router.router)
 app.include_router(config_router.router)
 app.include_router(artifacts_router.router)
 app.include_router(jobs_router.router)
+app.include_router(upload_router.router)
+app.include_router(stream_router.router)
 
 FRONTEND_DIST = os.getenv("FRONTEND_DIST", "../frontend/dist")
 if os.path.isdir(FRONTEND_DIST):
